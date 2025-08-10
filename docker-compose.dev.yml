@@ -58,7 +58,7 @@ services:
         PUID: 1000
         PGID: 1000
         TZ: Europe/Paris
-    image: laravel-php:8.3
+    image: laravel-php:8.4
     container_name: php-fpm
     restart: unless-stopped
     working_dir: /var/www/html
@@ -108,7 +108,7 @@ services:
         PUID: 1000
         PGID: 1000
         TZ: Europe/Paris
-    image: laravel-php:8.3
+    image: laravel-php:8.4
     container_name: horizon
     restart: unless-stopped
     working_dir: /var/www/html

@@ -1,208 +1,167 @@
-```markdown
-# Laravel + Docker Dev Stack
+README – Quick Start (Laravel 12 + Docker)
 
-این پروژه یک محیط توسعه کامل برای لاراول را با استفاده از Docker فراهم می‌کند، شامل:
+پیش‌نیازها
 
-- **MySQL 8**
-- **phpMyAdmin**
-- **PHP-FPM 8.3** (با اکستنشن‌های لازم برای لاراول)
-- **Apache 2**
-- **Redis 7**
-- **Laravel Horizon** (در محیط لینوکسی داخل داکر)
+Docker Desktop (Compose v2)
 
----
+Git
 
-## 📂 ساختار پوشه‌ها
+پورت‌های آزاد: 80, 8080, 3306, 6379, 5173 (برای Vite dev)
 
-```
-project-root/
-├── docker/
-│   ├── php-fpm/
-│   │   └── Dockerfile
-│   ├── apache/
-│   │   └── Dockerfile
-│   └── horizon/
-│       └── Dockerfile
-├── docker-compose.yml
-├── Makefile
-└── src/               # کد لاراول
-```
+ساختار پروژه (نمای کلی)
 
----
+<project-root>/
+├─ docker-compose.dev.yml            # استک توسعه (php-fpm + Apache + MySQL + Redis + Horizon)
+├─ docker-compose.prod.yml           # استک پروداکشن (php-fpm + Nginx + Horizon + Scheduler + Secrets)
+├─ Makefile                          # دستورات dev/prod: up/down/build/logs/artisan/...
+├─ secrets/                          # فقط prod: Docker secrets (app_key, db_password, db_root_password)
+├─ docker/
+│  ├─ php/
+│  │  ├─ Dockerfile                  # Dev image (php-fpm + ext + composer)
+│  │  ├─ Dockerfile.prod             # Prod multi-stage (composer no-dev + Vite build)
+│  │  ├─ entrypoint.sh               # Dev: ساخت پوشه‌ها/storage:link/keygen
+│  │  ├─ entrypoint.prod.sh          # Prod: cacheها + permissions
+│  │  ├─ opcache.ini                 # Dev OPCache (validate_timestamps=1)
+│  │  ├─ opcache.prod.ini            # Prod OPCache (validate_timestamps=0 + JIT)
+│  │  ├─ www.conf                    # Dev php-fpm
+│  │  └─ www.prod.conf               # Prod php-fpm (ping/status)
+│  ├─ apache/ (Dev)                  # وب‌سرور Dev
+│  └─ nginx/  (Prod)                 # وب‌سرور Prod
+└─ src/                              # سورس Laravel 12
+   ├─ app/ bootstrap/ config/ public/ resources/ routes/ storage/ vendor/
+   ├─ preload.php                    # (Prod) OPcache preload (اختیاری/پیشنهادی)
+   ├─ composer.json / composer.lock
+   └─ .env                           # تنظیمات لوکال
 
-## ⚙️ پیش‌نیازها
+نکته Dev: vendor و storage داخل کانتینر روی Named Volume هستند؛ پس Composer را همیشه داخل کانتینر اجرا کنید.
 
-- **Docker** و **Docker Compose**
-- **Make** (در ویندوز می‌توانی از Git Bash استفاده کنی)
+اولین اجرا (Dev)
 
----
+سرویس‌ها را بالا بیاور:
 
-## 🛠 توضیح فایل‌ها
-
-### `docker/php-fpm/Dockerfile`
-- بیس: `php:8.3-fpm`
-- اکستنشن‌ها: `pdo_mysql`, `bcmath`, `zip`, `intl`, `gd`, `redis`
-- Composer داخل ایمیج
-- مسیر کاری: `/var/www/html`
-
-### `docker/apache/Dockerfile`
-- بیس: `php:8.3-apache`
-- اکستنشن‌ها: `pdo_mysql`, `bcmath`, `zip`, `redis`
-- فعال‌سازی `mod_rewrite` برای لاراول
-- مسیر کاری: `/var/www/html`
-
-### `docker/horizon/Dockerfile`
-- بیس: `php:8.3-cli`
-- اکستنشن‌ها: `pcntl`, `posix`, `bcmath`, `pdo_mysql`, `intl`, `redis`
-- Composer داخل ایمیج
-- مسیر کاری: `/var/www/html`
-- دستور پیش‌فرض: اجرای Horizon
-
----
-
-## 🚀 مراحل راه‌اندازی
-
-1. **بالا آوردن سرویس‌ها**
-```bash
 make up
-```
+# یا: docker compose -f docker-compose.dev.yml up -d
 
-2. **نصب وابستگی‌های Composer**
-```bash
-make composer-install
-```
+اگر اولین بار است:
 
-3. **اجرای مایگریشن‌ها**
-```bash
+# .env را ست کنید (DB/Redis طبق compose از قبل ست است)
+make artisan cmd="key:generate"
+make artisan cmd="migrate --force"
+make artisan cmd="storage:link"
+
+(اختیاری) فرانت‌اند:
+
+make npm-install
+make npm-dev     # Vite dev server روی http://localhost:5173
+
+Horizon:
+
+make up s=horizon     # یا: docker compose -f docker-compose.dev.yml up -d horizon
+# داشبورد: http://localhost/horizon
+
+آدرس‌ها
+
+اپ: http://localhost
+
+phpMyAdmin: http://localhost:8080 (user: root / pass: root)
+
+Horizon: http://localhost/horizon
+
+دیپلوی (Prod) – لوکال/سرور
+
+Secrets را بساز:
+
+make MODE=prod prod-secrets-init
+# فایل‌های secrets/app_key, db_password, db_root_password ساخته می‌شوند (مقادیر را به‌روز کنید)
+
+Build و بالا آوردن:
+
+make MODE=prod build
+make MODE=prod up   # mysql, redis, php-fpm, nginx, horizon, scheduler
+make MODE=prod migrate-prod
+
+اپ: http://localhost (Nginx → php-fpm)
+
+Prod: vendor داخل ایمیج bake شده؛ فقط public و storage Volume هستند.
+
+فرمان‌های متداول (Cheat Sheet)
+
+Docker/Stack
+
+make up                 # بالا آوردن stack (dev یا prod با MODE=prod)
+make down               # خاموش کردن
+make logs               # همه لاگ‌ها
+make logs s=php-fpm     # لاگ سرویس خاص
+make ps                 # وضعیت سرویس‌ها
+
+Laravel
+
+make artisan cmd="route:list"
 make migrate
-```
+make cache-clear
+make cache-warm
+make tinker
 
-4. **نصب Horizon (یک‌بار)**
-```bash
-make horizon-install
-```
+Composer (داخل کانتینر – توصیه‌شده)
 
-5. **اجرای Horizon**
-```bash
-make horizon
-```
+docker compose -f docker-compose.dev.yml exec -u www-data php-fpm composer require vendor/package:^x.y
+docker compose -f docker-compose.dev.yml exec -u www-data php-fpm composer update
+docker compose -f docker-compose.dev.yml exec -u www-data php-fpm composer install
 
----
+Frontend
 
-## 🌐 دسترسی‌ها
+make npm-install
+make npm-dev
+make npm-build
 
-| سرویس       | آدرس                  | اطلاعات ورود |
-|-------------|----------------------|--------------|
-| Laravel App | http://localhost     | — |
-| phpMyAdmin  | http://localhost:8080 | یوزر: root / پسورد: root |
-| Redis       | localhost:6379       | — |
+Database/Redis
 
----
-
-## 📌 تنظیمات `.env` (داخل `src/.env`)
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=mysql
-DB_PORT=3306
-DB_DATABASE=laravel
-DB_USERNAME=laravel
-DB_PASSWORD=laravel
-
-REDIS_HOST=redis
-REDIS_PORT=6379
-
-APP_URL=http://localhost
-```
-
----
-
-## 📋 دستورات پرکاربرد Makefile
-
-### 🔹 مدیریت Docker
-| دستور     | توضیح |
-|-----------|-------|
-| `make up` | بالا آوردن سرویس‌ها |
-| `make down` | خاموش کردن سرویس‌ها |
-| `make restart` | ریستارت سرویس‌ها |
-| `make logs` | دیدن لاگ همه سرویس‌ها |
-| `make ps` | وضعیت سرویس‌ها |
-| `make prune` | پاکسازی منابع بدون استفاده |
-
-### 🔹 Laravel
-| دستور | توضیح |
-|-------|-------|
-| `make artisan cmd="route:list"` | اجرای دستور artisan |
-| `make migrate` | اجرای مایگریشن‌ها |
-| `make seed` | اجرای سیدرها |
-| `make migrate-refresh` | ریست دیتابیس + سید |
-| `make cache-clear` | پاک کردن کش |
-| `make cache-warm` | ساخت کش‌های کانفیگ و روت |
-| `make tinker` | اجرای تینکر |
-| `make queue-work` | اجرای صف بدون Horizon |
-| `make test` | اجرای PHPUnit |
-| `make pest` | اجرای Pest |
-
-### 🔹 Composer
-| دستور | توضیح |
-|-------|-------|
-| `make composer-install` | نصب پکیج‌ها |
-| `make composer-update` | آپدیت پکیج‌ها |
-| `make composer-dump` | dump-autoload |
-
-### 🔹 Horizon
-| دستور | توضیح |
-|-------|-------|
-| `make horizon` | اجرای Horizon |
-| `make horizon-install` | نصب Horizon |
-| `make horizon-pause` | توقف موقت Horizon |
-| `make horizon-continue` | ادامه کار Horizon |
-| `make horizon-terminate` | خاتمه Horizon |
-| `make horizon-status` | وضعیت Horizon |
-
-### 🔹 دیتابیس
-| دستور | توضیح |
-|-------|-------|
-| `make mysql` | ورود به MySQL |
-| `make mysql-dump file=backup.sql` | گرفتن بکاپ |
-| `make mysql-restore file=backup.sql` | ریستور بکاپ |
-
-### 🔹 Redis
-| دستور | توضیح |
-|-------|-------|
-| `make redis-cli` | ورود به Redis CLI |
-| `make redis-flush` | پاک کردن کل دیتا Redis |
-
-### 🔹 فرانت‌اند (Node داخل کانتینر)
-| دستور | توضیح |
-|-------|-------|
-| `make npm-install` | نصب وابستگی‌ها |
-| `make npm-build` | بیلد پروڈاکشن |
-| `make npm-dev` | اجرای dev |
-
----
-
-## 🗄 بکاپ و ریستور دیتابیس
-
-**بکاپ:**
-```bash
+make mysql                 # ورود به MySQL
 make mysql-dump file=backup.sql
-```
-
-**ریستور:**
-```bash
 make mysql-restore file=backup.sql
-```
+make redis-cli
 
----
+Horizon/Scheduler
 
-## 📜 نکات
+make horizon-status
+make scheduler-logs
 
-- Horizon روی ویندوز اجرا نمی‌شود؛ این ساختار آن را داخل کانتینر لینوکسی اجرا می‌کند.
-- همه سرویس‌ها از یک کدبیس (`./src`) استفاده می‌کنند.
-- فرانت‌اند بدون سرویس Node و با کانتینر موقتی اجرا می‌شود.
-- برای دیدن تمام دستورات، بزن:
-```bash
-make help
-```
-```
+قراردادها و نکات تیمی
+
+Composer را فقط داخل کانتینر اجرا کنید (Dev: vendor روی Volume است).
+
+Dev vs Prod parity: Dev (Apache + bind کد) / Prod (Nginx + bake). رفتار اپ یکسان است.
+
+Cacheها: در Dev cacheهای سنگین فعال نیستند؛ در Prod config/route/view/event:cache فعال‌اند.
+
+Log کندی: php-fpm slowlog روشن است؛ برای پروفایل می‌توانید Clockwork را فقط روی local اضافه کنید.
+
+مهاجرت‌ها: هر PR با migration جدید → بعد از merge در Prod artisan-migrate اجرا می‌شود.
+
+Secrets: هرگز .env Prod را کامیت نکنید. از secrets/ استفاده می‌کنیم.
+
+رفع خطاهای رایج
+
+Permission denied روی storage/frameworkentrypoint به‌صورت خودکار درست می‌کند؛ اگر لازم شد:
+
+docker compose -f docker-compose.dev.yml exec php-fpm bash -lc "chown -R www-data:www-data storage bootstrap/cache"
+
+پکیج نصب شده روی هاست، ولی داخل کانتینر دیده نمی‌شودDev از Volume برای vendor استفاده می‌کند → داخل کانتینر composer install بزنید:
+
+docker compose -f docker-compose.dev.yml exec -u www-data php-fpm composer install
+
+پورت 80 یا 3306 اشغال استسرویس‌های متداخل را خاموش کنید یا پورت‌ها را در compose تغییر دهید.
+
+APP_KEY missing / 500
+
+make artisan cmd="key:generate"
+
+Performance کوتاه
+
+Dev: OPcache فعال با validate_timestamps=1 + file_cache برای artisan.
+
+Prod: OPcache با validate_timestamps=0 + JIT + preload (src/preload.php).
+
+php-fpm تیون (Prod): pm.max_children را متناسب با منابع تنظیم کنید.
+
+DB/Redis: تنظیمات پیشنهادی در docker/mysql/my.cnf و Redis AOF (اختیاری).

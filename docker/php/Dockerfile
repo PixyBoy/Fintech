@@ -1,5 +1,4 @@
-# docker/php/Dockerfile
-FROM php:8.3-fpm
+FROM php:8.4-fpm
 
 ARG PUID=1000
 ARG PGID=1000

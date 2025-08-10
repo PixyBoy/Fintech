@@ -1,5 +1,5 @@
 # ---------- Base PHP with extensions ----------
-FROM php:8.3-fpm AS php_base
+FROM php:8.4-fpm AS php_base
 ARG TZ=UTC
 ENV TZ=${TZ}
 
