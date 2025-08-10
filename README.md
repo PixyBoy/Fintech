@@ -206,5 +206,3 @@ make mysql-restore file=backup.sql
 make help
 ```
 ```
-
----

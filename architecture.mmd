@@ -1,0 +1,30 @@
+flowchart LR
+    subgraph Laravel_App["Laravel Application (src/)"]
+        direction TB
+        PHPFPM["PHP-FPM 8.3\n(php-fpm)"]
+        Apache["Apache 2\n(apache)"]
+        Horizon["Laravel Horizon\n(horizon)"]
+    end
+
+    subgraph Services["Backend Services"]
+        direction TB
+        MySQL["MySQL 8\n(mysql)"]
+        phpMyAdmin["phpMyAdmin\n(phpmyadmin)"]
+        Redis["Redis 7\n(redis)"]
+    end
+
+    Developer["💻 Developer"] -->|HTTP| Apache
+    Apache -->|FastCGI| PHPFPM
+    PHPFPM -->|Executes| Laravel_App
+    PHPFPM -->|DB Queries| MySQL
+    PHPFPM -->|Cache / Queues| Redis
+    Horizon -->|Queue Workers| Redis
+    phpMyAdmin -->|Manage| MySQL
+
+    classDef service fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px;
+    classDef app fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px;
+    classDef external fill:#E8F5E9,stroke:#43A047,stroke-width:2px;
+
+    class PHPFPM,Apache,Horizon app
+    class MySQL,phpMyAdmin,Redis service
+    class Developer external
