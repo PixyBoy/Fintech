@@ -1,0 +1,64 @@
+# ---------- Base PHP with extensions ----------
+FROM php:8.3-fpm AS php_base
+ARG TZ=UTC
+ENV TZ=${TZ}
+
+RUN apt-get update && apt-get install -y \
+    git unzip libzip-dev libicu-dev libpng-dev libonig-dev libpq-dev \
+    libfreetype6-dev libjpeg62-turbo-dev zlib1g-dev libxml2-dev libssl-dev \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install -j$(nproc) pdo_mysql bcmath zip intl gd opcache pcntl \
+ && pecl install redis \
+ && docker-php-ext-enable redis \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY docker/php/opcache.prod.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/www.prod.conf     /usr/local/etc/php-fpm.d/www.conf
+
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# ---------- Composer deps (no-dev) ----------
+FROM php_base AS composer_deps
+WORKDIR /var/www/html
+COPY src/composer.json src/composer.lock ./
+RUN --mount=type=cache,target=/tmp/composer \
+    composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --classmap-authoritative
+
+# ---------- Front build (Vite) ----------
+FROM node:20-alpine AS assets
+WORKDIR /app
+ENV CI=true
+COPY src/package.json src/package-lock.json* src/pnpm-lock.yaml* src/yarn.lock* ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm i; fi
+COPY src/ .
+RUN npm run build
+
+# ---------- Final image ----------
+FROM php_base AS app
+WORKDIR /var/www/html
+
+# کپی سورس
+COPY src/ ./
+
+# vendor از stage composer
+COPY --from=composer_deps /var/www/html/vendor ./vendor
+
+# خروجی Vite
+COPY --from=assets /app/public/build ./public/build
+
+# Entrypoint (prod)
+COPY docker/php/entrypoint.prod.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# همسان‌سازی UID/GID برای www-data (برای مالکیت درست فایل‌ها)
+ARG PUID=1000
+ARG PGID=1000
+RUN groupmod -o -g ${PGID} www-data && \
+    usermod  -o -u ${PUID} -g www-data www-data
+
+# مهم: کاربر را تغییر نمی‌دهیم (root می‌ماند) تا بتوانیم mkdir/chown روی ولوم‌ها انجام دهیم
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["ph]()

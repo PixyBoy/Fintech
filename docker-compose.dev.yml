@@ -15,7 +15,6 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./docker/mysql/my.conf:/etc/mysql/conf.d/my.cnf
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -proot || exit 1"]
       interval: 5s
@@ -56,7 +55,7 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
       args:
-        PUID: 1000          # در صورت تفاوت UID/GID میزبان، اینها را ست کن
+        PUID: 1000
         PGID: 1000
         TZ: Europe/Paris
     image: laravel-php:8.3

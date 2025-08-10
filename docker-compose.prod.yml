@@ -1,0 +1,191 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      TZ: Europe/Paris
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    secrets:
+      - db_root_password
+      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$(cat /run/secrets/db_root_password) || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+      args:
+        TZ: Europe/Paris
+    image: laravel-php:prod
+    container_name: php-fpm
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: laravel
+      DB_USERNAME: laravel
+      # از secrets خوانده می‌شود:
+      APP_KEY_FILE: /run/secrets/app_key
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+      CACHE_DRIVER: redis
+      TZ: Europe/Paris
+    volumes:
+      # فقط public را share می‌کنیم تا Nginx همان فایل‌ها را سرو کند
+      - app-public:/var/www/html/public
+      - storage:/var/www/html/storage
+    secrets:
+      - app_key
+      - db_password
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD-SHELL", "php -v >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    image: laravel-nginx:prod
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      php-fpm:
+        condition: service_healthy
+    volumes:
+      - app-public:/var/www/html/public
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  horizon:
+    image: laravel-php:prod
+    container_name: horizon
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+      TZ: Europe/Paris
+      APP_KEY_FILE: /run/secrets/app_key
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - storage:/var/www/html/storage
+      - app-public:/var/www/html/public
+    secrets:
+      - app_key
+      - db_password
+    depends_on:
+      php-fpm:
+        condition: service_healthy
+    command: ["php", "artisan", "horizon"]
+
+  scheduler:
+    image: laravel-php:prod
+    container_name: scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      REDIS_HOST: redis
+      TZ: Europe/Paris
+      APP_KEY_FILE: /run/secrets/app_key
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - storage:/var/www/html/storage
+      - app-public:/var/www/html/public
+    secrets:
+      - app_key
+      - db_password
+    depends_on:
+      php-fpm:
+        condition: service_healthy
+    command: ["php", "artisan", "schedule:work"]
+
+  # اجرای مایگریشن یک‌بار (دستی اجرا کن)
+  artisan-migrate:
+    image: laravel-php:prod
+    container_name: artisan-migrate
+    restart: "no"
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      REDIS_HOST: redis
+      TZ: Europe/Paris
+      APP_KEY_FILE: /run/secrets/app_key
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - storage:/var/www/html/storage
+      - app-public:/var/www/html/public
+    secrets:
+      - app_key
+      - db_password
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["sh","-lc","php artisan migrate --force"]
+
+volumes:
+  mysql-data:
+  redis-data:
+  storage:
+  app-public:
+
+secrets:
+  app_key:
+    file: ./secrets/app_key
+  db_password:
+    file: ./secrets/db_password
+  db_root_password:
+    file: ./secrets/db_root_password
