@@ -2,6 +2,11 @@
 
 return [
     'status_enum' => [
-        'pending','paid','processing','done','refunded','failed'
+        'pending',
+        'paid',
+        'processing',
+        'done',
+        'refunded',
+        'failed',
     ],
 ];
