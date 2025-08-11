@@ -1,5 +1,6 @@
 <?php
-namespace App\Modules\SharedKernel\Application\View\Components;
+
+namespace App\Modules\SharedKernel\Application\Livewire;
 
 use Illuminate\View\Component;
 
