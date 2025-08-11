@@ -9,8 +9,9 @@
 #   PUSH=1|0
 #   DRY_RUN=1|0
 # =========================
-
-SHELL := /bin/sh
+# Force GNU Make to use Git Bash on Windows
+SHELL := C:/Program\ Files/Git/usr/bin/bash.exe
+.SHELLFLAGS := -eo pipefail -c
 
 ORIGIN        ?= origin
 MAIN          ?= main
