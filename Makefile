@@ -133,6 +133,9 @@ queue-work: ## اجرای صف ساده (بدون Horizon)
 test: ## اجرای PHPUnit
 	$(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/phpunit
 
+lint: ## اجرای Pint (کدنویسی منظم)
+	$(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/pint
+
 pest: ## اجرای Pest (اگر نصب است)
 	$(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/pest -p
 
