@@ -166,31 +166,43 @@ return [
     |
     */
 
-    'memory_limit' => 64,
-    'supervisors' => [
-        'supervisor-high' => [
-            'connection' => 'redis',
-            'queue' => ['high', 'default'],
-            'balance' => 'auto',
-            'minProcesses' => 2,
-            'maxProcesses' => 4,
-            'tries' => 3,
-        ],
-        'supervisor-default' => [
-            'connection' => 'redis',
-            'queue' => ['default'],
-            'balance' => 'auto',
-            'minProcesses' => 2,
-            'maxProcesses' => 4,
-            'tries' => 3,
-        ],
-        'supervisor-low' => [
-            'connection' => 'redis',
-            'queue' => ['low'],
-            'balance' => 'auto',
+    'defaults' => [
+        'supervisor' => [
+            'connection'   => 'redis',
+            'queue'        => ['default'],
+            'balance'      => 'auto',
             'minProcesses' => 1,
-            'maxProcesses' => 2,
-            'tries' => 1,
+            'maxProcesses' => 1,
+            'tries'        => 3,
         ],
     ],
+    'memory_limit' => 64,
+    'environments' => [
+        'local' => [
+            'supervisor-high' => [
+                'connection'   => 'redis',
+                'queue'        => ['high', 'default'],
+                'balance'      => 'auto',
+                'minProcesses' => 2,
+                'maxProcesses' => 4,
+                'tries'        => 1,
+            ],
+            'supervisor-default' => [
+                'connection'   => 'redis',
+                'queue'        => ['default'],
+                'balance'      => 'auto',
+                'minProcesses' => 2,
+                'maxProcesses' => 4,
+                'tries'        => 1,
+            ],
+            'supervisor-low' => [
+                'connection'   => 'redis',
+                'queue'        => ['low'],
+                'balance'      => 'auto',
+                'minProcesses' => 1,
+                'maxProcesses' => 2,
+                'tries'        => 1,
+            ],
+        ]
+    ]
 ];
