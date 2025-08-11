@@ -167,47 +167,30 @@ return [
     */
 
     'memory_limit' => 64,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Queue Worker Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Here you may define the queue worker settings used by your application
-    | in all environments. These supervisors and settings handle all your
-    | queued jobs and will be provisioned by Horizon during deployment.
-    |
-    */
-
-    'defaults' => [
-        'supervisor-1' => [
+    'supervisors' => [
+        'supervisor-high' => [
+            'connection' => 'redis',
+            'queue' => ['high', 'default'],
+            'balance' => 'auto',
+            'minProcesses' => 2,
+            'maxProcesses' => 4,
+            'tries' => 3,
+        ],
+        'supervisor-default' => [
             'connection' => 'redis',
             'queue' => ['default'],
             'balance' => 'auto',
-            'autoScalingStrategy' => 'time',
-            'maxProcesses' => 1,
-            'maxTime' => 0,
-            'maxJobs' => 0,
-            'memory' => 128,
+            'minProcesses' => 2,
+            'maxProcesses' => 4,
+            'tries' => 3,
+        ],
+        'supervisor-low' => [
+            'connection' => 'redis',
+            'queue' => ['low'],
+            'balance' => 'auto',
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
             'tries' => 1,
-            'timeout' => 60,
-            'nice' => 0,
-        ],
-    ],
-
-    'environments' => [
-        'production' => [
-            'supervisor-1' => [
-                'maxProcesses' => 10,
-                'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
-            ],
-        ],
-
-        'local' => [
-            'supervisor-1' => [
-                'maxProcesses' => 3,
-            ],
         ],
     ],
 ];
