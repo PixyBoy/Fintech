@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Src\App\Modules\Auth\Application\Http\Livewire\Login;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -23,7 +25,6 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__.'/routes/web.php');
         $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
-        $this->loadViewsFrom(__DIR__.'/Resources/views', 'authmod');
 
         RateLimiter::for('otp-request', function (Request $request) {
             $phone = $request->input('phone', '');

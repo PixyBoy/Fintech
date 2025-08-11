@@ -6,11 +6,12 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class VerifyOtpRequest extends FormRequest
 {
+    protected $errorBag = 'verifyOtp';
     public function rules(): array
     {
         return [
-            'phone' => ['required', 'regex:/^(\+98|0)?9\d{9}$/'],
-            'code' => ['required', 'digits_between:4,6'],
+            'phone' => ['required','regex:/^(?:\+98|0)?9\d{9}$/'],
+            'code'  => ['required','digits_between:4,6'],
         ];
     }
 
