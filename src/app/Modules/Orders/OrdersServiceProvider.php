@@ -2,19 +2,20 @@
 
 namespace App\Modules\Orders;
 
+use App\Modules\Orders\Domain\Repositories\OrderRepositoryInterface;
+use App\Modules\Orders\Infrastructure\Persistence\Eloquent\Repositories\OrderRepository;
 use Illuminate\Support\ServiceProvider;
 
 class OrdersServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Bindings will be added in future sprints
+        $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
     }
 
     public function boot(): void
     {
-        if (file_exists(__DIR__.'/routes/web.php')) {
-            $this->loadRoutesFrom(__DIR__.'/routes/web.php');
-        }
+        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
+        $this->loadViewsFrom(__DIR__.'/Application/Views', 'orders');
     }
 }

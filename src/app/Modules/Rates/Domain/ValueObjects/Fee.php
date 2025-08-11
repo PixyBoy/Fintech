@@ -8,6 +8,6 @@ class Fee
 {
     public function __construct(
         public FeeType $type,
-        public string $value
+        public string $value,
     ) {}
 }

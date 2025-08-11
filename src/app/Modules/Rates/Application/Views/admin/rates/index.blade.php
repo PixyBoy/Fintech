@@ -1,0 +1,1 @@
+<div>Rates panel</div>

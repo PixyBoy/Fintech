@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Modules\Rates\Application\UseCases;
+
+use App\Modules\Rates\Application\DTOs\QuoteInput;
+use App\Modules\Rates\Application\DTOs\QuoteResult;
+use App\Modules\Rates\Domain\Repositories\RateRepositoryInterface;
+use App\Modules\Rates\Domain\Services\FeeEngineInterface;
+
+class CalculateQuote
+{
+    public function __construct(
+        private RateRepositoryInterface $rates,
+        private FeeEngineInterface $feeEngine,
+    ) {}
+
+    public function __invoke(QuoteInput $input): QuoteResult
+    {
+        $rate = $this->rates->latest();
+        if (! $rate) {
+            throw new \RuntimeException('Rate not available');
+        }
+
+        $field = config("rates.service_overrides.{$input->serviceKey}")
+            ?? config('rates.default_rate_field', 'usd_sell');
+        $rateValue = $field === 'usd_buy' ? $rate->usdBuy : $rate->usdSell;
+
+        $feeUsd = $this->feeEngine->compute($input->serviceKey, $input->amountUsd);
+        $subtotalUsd = bcadd($input->amountUsd, $feeUsd, 4);
+        $totalIrr = (string) round((float) $subtotalUsd * (float) $rateValue);
+
+        return new QuoteResult(
+            $input->amountUsd,
+            $feeUsd,
+            $subtotalUsd,
+            $rateValue,
+            $totalIrr,
+        );
+    }
+}
