@@ -29,7 +29,7 @@ Git
 │  └─ nginx/  (Prod)                 # وب‌سرور Prod
 └─ src/                              # سورس Laravel 12
    ├─ app/ bootstrap/ config/ public/ resources/ routes/ storage/ vendor/
-   ├─ preload.php                    # (Prod) OPcache preload (اختیاری/پیشنهادی)
+   ├─ preload.php                    # (Prod) OPcache preload
    ├─ composer.json / composer.lock
    └─ .env                           # تنظیمات لوکال
 
