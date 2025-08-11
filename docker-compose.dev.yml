@@ -105,6 +105,8 @@ services:
     container_name: ${HORIZON_CONTAINER_NAME:-horizon}
     restart: unless-stopped
     working_dir: /var/www/html
+    env_file:
+      - ./src/.env
     environment:
       APP_ENV: ${APP_ENV:-local}
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
@@ -121,6 +123,11 @@ services:
       redis:
         condition: service_healthy
     command: ["php", "artisan", "horizon"]
+    healthcheck:
+      test: ["CMD", "php", "artisan", "horizon:status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   mysql-data:

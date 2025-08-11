@@ -18,10 +18,20 @@ class PingJob implements ShouldQueue
      *
      * @var string
      */
-    public $queue = 'high';
-
+    public function __construct(public ?string $token = null)
+    {
+        $this->onQueue('high');
+        $this->onConnection('redis');
+    }
+    public function tags(): array
+    {
+        return ['shared-kernel', 'ping'];
+    }
     public function handle(): void
     {
-        Log::info('PingJob executed');
+        Log::info('PingJob handled', [
+            'token' => $this->token,
+            'ts'    => now()->toIso8601String(),
+        ]);
     }
 }
