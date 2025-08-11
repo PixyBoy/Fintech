@@ -6,12 +6,13 @@ use App\Modules\Orders\Domain\Entities\Order;
 use App\Modules\Orders\Domain\Enums\OrderStatus;
 use App\Modules\Orders\Domain\Repositories\OrderRepositoryInterface;
 use App\Modules\Orders\Infrastructure\Persistence\Eloquent\Models\OrderModel;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class OrderRepository implements OrderRepositoryInterface
 {
     public function create(Order $order): Order
     {
-        $model = OrderModel::create([
+        $model = OrderModel::query()->create([
             'user_id' => $order->userId,
             'service_key' => $order->serviceKey,
             'currency' => 'USD',
@@ -25,29 +26,41 @@ class OrderRepository implements OrderRepositoryInterface
             'status' => $order->status->value,
         ]);
 
-        return $this->toDomain($model);
+        return $this->map($model);
     }
 
     public function find(int $id): ?Order
     {
-        $model = OrderModel::find($id);
-        return $model ? $this->toDomain($model) : null;
+        $model = OrderModel::query()->find($id);
+        return $model ? $this->map($model) : null;
     }
 
-    protected function toDomain(OrderModel $model): Order
+    public function paginate(array $filters = []): LengthAwarePaginator
+    {
+        $query = OrderModel::query();
+        if (isset($filters['service_key'])) {
+            $query->where('service_key', $filters['service_key']);
+        }
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        return $query->paginate();
+    }
+
+    protected function map(OrderModel $m): Order
     {
         return new Order(
-            $model->user_id,
-            $model->service_key,
-            (string) $model->amount_usd,
-            (string) $model->fee_usd,
-            (string) $model->subtotal_usd,
-            (string) $model->rate_used,
-            (string) $model->total_irr,
-            OrderStatus::from($model->status),
-            $model->meta,
-            $model->quote_breakdown,
-            $model->id,
+            $m->user_id,
+            $m->service_key,
+            $m->amount_usd,
+            $m->fee_usd,
+            $m->subtotal_usd,
+            $m->rate_used,
+            $m->total_irr,
+            OrderStatus::from($m->status),
+            $m->quote_breakdown ?? [],
+            $m->meta ?? [],
+            $m->id,
         );
     }
 }

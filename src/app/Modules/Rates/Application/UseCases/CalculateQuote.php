@@ -11,29 +11,30 @@ class CalculateQuote
 {
     public function __construct(
         private RateRepositoryInterface $rates,
-        private FeeEngineInterface $feeEngine,
+        private FeeEngineInterface $fees,
     ) {}
 
     public function __invoke(QuoteInput $input): QuoteResult
     {
         $rate = $this->rates->latest();
         if (! $rate) {
-            throw new \RuntimeException('Rate not available');
+            throw new \RuntimeException('No rates available');
         }
 
         $field = config("rates.service_overrides.{$input->serviceKey}")
-            ?? config('rates.default_rate_field', 'usd_sell');
-        $rateValue = $field === 'usd_buy' ? $rate->usdBuy : $rate->usdSell;
+            ?? config('rates.default_rate_field');
 
-        $feeUsd = $this->feeEngine->compute($input->serviceKey, $input->amountUsd);
+        $rateUsed = $field === 'usd_buy' ? $rate->usdBuy : $rate->usdSell;
+
+        $feeUsd = $this->fees->compute($input->serviceKey, $input->amountUsd);
         $subtotalUsd = bcadd($input->amountUsd, $feeUsd, 4);
-        $totalIrr = (string) round((float) $subtotalUsd * (float) $rateValue);
+        $totalIrr = (string) round((float) bcmul($subtotalUsd, $rateUsed, 4));
 
         return new QuoteResult(
             $input->amountUsd,
             $feeUsd,
             $subtotalUsd,
-            $rateValue,
+            $rateUsed,
             $totalIrr,
         );
     }

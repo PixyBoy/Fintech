@@ -5,40 +5,48 @@ namespace App\Modules\Rates\Infrastructure\Persistence\Eloquent\Repositories;
 use App\Modules\Rates\Domain\Entities\Rate;
 use App\Modules\Rates\Domain\Repositories\RateRepositoryInterface;
 use App\Modules\Rates\Infrastructure\Persistence\Eloquent\Models\RateModel;
+use App\Modules\Rates\Events\RatesUpdated;
 use Illuminate\Support\Facades\Cache;
 
 class RateRepository implements RateRepositoryInterface
 {
     public function latest(): ?Rate
     {
-        $ttl = config('rates.cache_ttl', 0);
+        $ttl = config('rates.cache_ttl');
         $key = 'rates:current';
-        if ($ttl > 0 && ($cached = Cache::get($key))) {
-            return $cached;
-        }
 
-        $model = RateModel::latest('id')->first();
-        if (! $model) {
-            return null;
-        }
-
-        $rate = new Rate($model->base_currency, (string) $model->usd_buy, (string) $model->usd_sell, $model->updated_at?->toImmutable());
         if ($ttl > 0) {
-            Cache::put($key, $rate, $ttl);
+            return Cache::remember($key, $ttl, function () {
+                $model = RateModel::query()->latest()->first();
+                return $model ? $this->map($model) : null;
+            });
         }
-        return $rate;
+
+        $model = RateModel::query()->latest()->first();
+        return $model ? $this->map($model) : null;
     }
 
     public function upsert(Rate $rate): Rate
     {
-        $model = RateModel::create([
+        $model = RateModel::query()->create([
             'base_currency' => $rate->baseCurrency,
             'usd_buy' => $rate->usdBuy,
             'usd_sell' => $rate->usdSell,
         ]);
 
         Cache::forget('rates:current');
+        event(new RatesUpdated());
 
-        return new Rate($model->base_currency, (string) $model->usd_buy, (string) $model->usd_sell, $model->updated_at?->toImmutable());
+        return $this->map($model);
+    }
+
+    protected function map(RateModel $model): Rate
+    {
+        return new Rate(
+            $model->base_currency,
+            $model->usd_buy,
+            $model->usd_sell,
+            $model->updated_at,
+        );
     }
 }

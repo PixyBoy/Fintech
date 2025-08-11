@@ -7,11 +7,13 @@ use App\Modules\Orders\Domain\Repositories\OrderRepositoryInterface;
 
 class GetOrder
 {
-    public function __construct(private OrderRepositoryInterface $orders) {}
+    public function __construct(private OrderRepositoryInterface $repo)
+    {
+    }
 
     public function __invoke(int $id): ?OrderView
     {
-        $order = $this->orders->find($id);
+        $order = $this->repo->find($id);
         if (! $order) {
             return null;
         }
@@ -19,9 +21,9 @@ class GetOrder
         return new OrderView(
             $order->id ?? 0,
             $order->serviceKey,
-            $order->status,
+            $order->amountUsd,
             $order->totalIrr,
-            $order->quoteBreakdown,
+            $order->status,
         );
     }
 }

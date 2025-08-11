@@ -7,11 +7,13 @@ use App\Modules\Rates\Domain\Repositories\RateRepositoryInterface;
 
 class UpsertRate
 {
-    public function __construct(private RateRepositoryInterface $rates) {}
-
-    public function __invoke(string $usdBuy, string $usdSell, string $baseCurrency = 'IRR'): Rate
+    public function __construct(private RateRepositoryInterface $repo)
     {
-        $rate = new Rate($baseCurrency, $usdBuy, $usdSell);
-        return $this->rates->upsert($rate);
+    }
+
+    public function __invoke(string $usdBuy, string $usdSell): Rate
+    {
+        $rate = new Rate('IRR', $usdBuy, $usdSell);
+        return $this->repo->upsert($rate);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'cache_ttl' => 300,
     'default_rate_field' => 'usd_sell',

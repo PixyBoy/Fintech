@@ -13,19 +13,22 @@ class CalculateQuoteTest extends TestCase
 {
     public function test_calculates_quote(): void
     {
-        $rateRepo = new class implements RateRepositoryInterface {
-            public function latest(): ?Rate { return new Rate('IRR','50000','60000'); }
+        $rates = new class implements RateRepositoryInterface {
+            public function latest(): ?Rate { return new Rate('IRR', '600000', '610000'); }
             public function upsert(Rate $rate): Rate { return $rate; }
         };
-        $feeEngine = new class implements FeeEngineInterface {
+
+        $fees = new class implements FeeEngineInterface {
             public function compute(string $serviceKey, string $amountUsd): string { return '5'; }
         };
-        $useCase = new CalculateQuote($rateRepo, $feeEngine);
-        $result = $useCase(new QuoteInput('payforme','100'));
-        $this->assertSame('100', $result->amountUsd);
+
+        $useCase = new CalculateQuote($rates, $fees);
+        $result = $useCase(new QuoteInput('payforme', '10'));
+
+        $this->assertSame('10', $result->amountUsd);
         $this->assertSame('5', $result->feeUsd);
-        $this->assertSame('105.0000', $result->subtotalUsd);
-        $this->assertSame('60000', $result->rateUsed);
-        $this->assertSame((string) round(105*60000), $result->totalIrr);
+        $this->assertSame('15.0000', $result->subtotalUsd);
+        $this->assertSame('610000', $result->rateUsed);
+        $this->assertEquals(9150000, $result->totalIrr);
     }
 }

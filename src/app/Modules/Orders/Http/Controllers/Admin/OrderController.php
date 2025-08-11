@@ -2,7 +2,7 @@
 
 namespace App\Modules\Orders\Http\Controllers\Admin;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 
 class OrderController extends Controller
 {
@@ -11,7 +11,7 @@ class OrderController extends Controller
         return view('orders::admin.orders.index');
     }
 
-    public function show()
+    public function show(int $order)
     {
         return view('orders::admin.orders.show');
     }

@@ -15,10 +15,10 @@ class FeeRule
         public bool $isActive = true,
     ) {}
 
-    public function matches(string $amountUsd): bool
+    public function matches(string $amount): bool
     {
-        return $this->isActive
-            && bccomp($amountUsd, $this->fromAmount, 2) >= 0
-            && bccomp($amountUsd, $this->toAmount, 2) <= 0;
+        return bccomp($amount, $this->fromAmount, 2) >= 0
+            && bccomp($amount, $this->toAmount, 2) <= 0
+            && $this->isActive;
     }
 }

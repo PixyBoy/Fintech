@@ -8,7 +8,5 @@ class RateModel extends Model
 {
     protected $table = 'rates';
 
-    protected $fillable = [
-        'base_currency','usd_buy','usd_sell',
-    ];
+    protected $fillable = ['base_currency','usd_buy','usd_sell'];
 }

@@ -3,51 +3,42 @@
 namespace App\Modules\Orders\Application\UseCases;
 
 use App\Modules\Orders\Application\DTOs\CreateOrderInput;
-use App\Modules\Orders\Application\DTOs\OrderView;
 use App\Modules\Orders\Domain\Entities\Order;
 use App\Modules\Orders\Domain\Enums\OrderStatus;
 use App\Modules\Orders\Domain\Repositories\OrderRepositoryInterface;
-use App\Modules\Rates\Application\DTOs\QuoteInput;
 use App\Modules\Rates\Application\UseCases\CalculateQuote;
+use App\Modules\Rates\Application\DTOs\QuoteInput;
 
 class CreateOrder
 {
     public function __construct(
-        private OrderRepositoryInterface $orders,
-        private CalculateQuote $calculateQuote,
+        private CalculateQuote $quote,
+        private OrderRepositoryInterface $repo,
     ) {}
 
-    public function __invoke(CreateOrderInput $input): OrderView
+    public function __invoke(CreateOrderInput $input): Order
     {
-        $quote = ($this->calculateQuote)(new QuoteInput($input->serviceKey, $input->amountUsd));
+        $result = ($this->quote)(new QuoteInput($input->serviceKey, $input->amountUsd));
 
         $order = new Order(
             $input->userId,
             $input->serviceKey,
-            $quote->amountUsd,
-            $quote->feeUsd,
-            $quote->subtotalUsd,
-            $quote->rateUsed,
-            $quote->totalIrr,
+            $result->amountUsd,
+            $result->feeUsd,
+            $result->subtotalUsd,
+            $result->rateUsed,
+            $result->totalIrr,
             OrderStatus::Pending,
-            $input->meta,
             [
-                'amount_usd' => $quote->amountUsd,
-                'fee_usd' => $quote->feeUsd,
-                'subtotal_usd' => $quote->subtotalUsd,
-                'rate_used' => $quote->rateUsed,
-                'total_irr' => $quote->totalIrr,
+                'amount_usd' => $result->amountUsd,
+                'fee_usd' => $result->feeUsd,
+                'subtotal_usd' => $result->subtotalUsd,
+                'rate_used' => $result->rateUsed,
+                'total_irr' => $result->totalIrr,
             ],
+            $input->meta,
         );
 
-        $created = $this->orders->create($order);
-
-        return new OrderView(
-            $created->id ?? 0,
-            $created->serviceKey,
-            $created->status,
-            $created->totalIrr,
-            $created->quoteBreakdown,
-        );
+        return $this->repo->create($order);
     }
 }

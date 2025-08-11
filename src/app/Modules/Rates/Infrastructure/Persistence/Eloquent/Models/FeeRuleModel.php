@@ -9,6 +9,6 @@ class FeeRuleModel extends Model
     protected $table = 'fee_rules';
 
     protected $fillable = [
-        'service_key','from_amount','to_amount','fee_type','value','is_active',
+        'service_key','from_amount','to_amount','fee_type','value','is_active'
     ];
 }

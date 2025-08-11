@@ -6,14 +6,11 @@ use App\Modules\Orders\Domain\Enums\OrderStatus;
 
 class OrderView
 {
-    /**
-     * @param array<string,mixed> $quoteBreakdown
-     */
     public function __construct(
         public int $id,
         public string $serviceKey,
-        public OrderStatus $status,
+        public string $amountUsd,
         public string $totalIrr,
-        public array $quoteBreakdown,
+        public OrderStatus $status,
     ) {}
 }

@@ -8,17 +8,27 @@ use App\Modules\Rates\Domain\Repositories\FeeRuleRepositoryInterface;
 
 class UpsertFeeRule
 {
-    public function __construct(private FeeRuleRepositoryInterface $rules) {}
+    public function __construct(private FeeRuleRepositoryInterface $repo)
+    {
+    }
 
     public function __invoke(
         string $serviceKey,
         string $fromAmount,
         string $toAmount,
-        FeeType $feeType,
+        string $feeType,
         string $value,
         bool $isActive = true,
     ): FeeRule {
-        $rule = new FeeRule($serviceKey, $fromAmount, $toAmount, $feeType, $value, $isActive);
-        return $this->rules->upsert($rule);
+        $rule = new FeeRule(
+            $serviceKey,
+            $fromAmount,
+            $toAmount,
+            FeeType::from($feeType),
+            $value,
+            $isActive,
+        );
+
+        return $this->repo->upsert($rule);
     }
 }

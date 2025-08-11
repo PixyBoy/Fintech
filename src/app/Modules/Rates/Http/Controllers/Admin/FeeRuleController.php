@@ -2,7 +2,7 @@
 
 namespace App\Modules\Rates\Http\Controllers\Admin;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 
 class FeeRuleController extends Controller
 {
