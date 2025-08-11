@@ -277,3 +277,5 @@ deploy-prod: prod-secrets-init ## Build & Run کامل prod
 	$(COMPOSE) run --rm artisan-migrate
 	$(COMPOSE) up -d php-fpm nginx horizon scheduler
 	@echo ">> Prod deployed. Open http://localhost"
+
+-include git.Makefile
