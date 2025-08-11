@@ -1,11 +1,18 @@
 <?php
-namespace App\Modules\SharedKernel\Application\View\Components;
+
+namespace App\Modules\SharedKernel\Application\Livewire;
 
 use Illuminate\View\Component;
 
 class Dialog extends Component
 {
-    public $name, $title, $maxWidth, $onClose;
+    public $name;
+
+    public $title;
+
+    public $maxWidth;
+
+    public $onClose;
 
     public function __construct($name, $title = null, $maxWidth = 'max-w-md', $onClose = 'close-dialog')
     {
@@ -20,4 +27,3 @@ class Dialog extends Component
         return view('shared-kernel::components.dialog');
     }
 }
-
