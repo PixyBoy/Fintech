@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 
 class ModulesServiceProvider extends ServiceProvider
 {
@@ -29,6 +31,29 @@ class ModulesServiceProvider extends ServiceProvider
 
             if (! config("modules.enabled.$name", true)) {
                 continue;
+            }
+
+
+            $alias = Str::kebab($name);
+
+            /** ---------- Load Views ---------- **/
+            $viewsPath = $modulePath . '/Application/Views';
+            if (is_dir($viewsPath)) {
+                $this->loadViewsFrom($viewsPath, $alias);
+            }
+
+            /** ---------- Register Livewire Components ---------- **/
+            $livewirePath = $modulePath . '/Application/Livewire';
+            if (is_dir($livewirePath)) {
+                foreach (File::allFiles($livewirePath) as $file) {
+                    $className = $file->getFilenameWithoutExtension();
+                    $fqcn = "App\\Modules\\{$name}\\Application\\Livewire\\{$className}";
+
+                    if (class_exists($fqcn)) {
+                        $componentName = $alias . '.' . Str::kebab($className);
+                        Livewire::component($componentName, $fqcn);
+                    }
+                }
             }
 
             $this->modules[$name] = $modulePath;
