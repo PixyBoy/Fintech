@@ -131,10 +131,13 @@ queue-work: ## اجرای صف ساده (بدون Horizon)
 	$(COMPOSE) exec -d $(APP_SERVICE) php artisan queue:work --tries=3 --timeout=90
 
 test: ## اجرای PHPUnit
-	$(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/phpunit
+        $(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/phpunit
+
+lint: ## اجرای Pint (کدنویسی منظم)
+        $(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/pint
 
 pest: ## اجرای Pest (اگر نصب است)
-	$(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/pest -p
+        $(COMPOSE) exec $(APP_SERVICE) ./vendor/bin/pest -p
 
 # =========================
 # Composer
