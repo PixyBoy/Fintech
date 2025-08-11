@@ -128,7 +128,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
+  node:
+    image: node:20
+    working_dir: /var/www/html
+    ports:
+    - "5173:5173"
+    volumes:
+      - ./src:/var/www/html
+    command: sh -c "npm install && npm run dev"
 volumes:
   mysql-data:
   redis-data:
