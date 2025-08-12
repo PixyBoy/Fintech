@@ -14,11 +14,11 @@ class QuoteCalculator
             $calc = App::make('App\\Modules\\Rates\\Application\\UseCases\\CalculateQuote');
             $result = $calc->execute($serviceKey, $amountUsd);
             return new QuoteDto(
-                $result->amount_usd,
-                $result->fee_usd,
-                $result->subtotal_usd,
-                $result->rate_used,
-                $result->total_irr
+                $result->amountUsd,
+                $result->feeUsd,
+                $result->subtotalUsd,
+                $result->rateUsed,
+                $result->totalIrr
             );
         }
 

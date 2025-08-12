@@ -3,6 +3,7 @@
 namespace App\Modules\PayForMe\Application\UseCases;
 
 use App\Modules\PayForMe\Application\DTOs\RequestView;
+use App\Modules\PayForMe\Domain\Enums\PayForMeStatus;
 use App\Modules\PayForMe\Domain\Repositories\PayForMeRepositoryInterface;
 
 class GetMyRequests
@@ -20,7 +21,7 @@ class GetMyRequests
                 $model->request_code,
                 $model->amount_usd,
                 $model->quote_snapshot['total_irr'] ?? 0,
-                $model->status
+                PayForMeStatus::{ucwords($model->status)}
             );
         });
         return $paginator;

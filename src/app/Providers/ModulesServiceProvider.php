@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -42,15 +43,31 @@ class ModulesServiceProvider extends ServiceProvider
                 $this->loadViewsFrom($viewsPath, $alias);
             }
 
+            $componentsPath = $viewsPath . '/components';
+            if (is_dir($componentsPath)) {
+                Blade::anonymousComponentPath($componentsPath, $alias);
+            }
+
             /** ---------- Register Livewire Components ---------- **/
             $livewirePath = $modulePath . '/Application/Livewire';
             if (is_dir($livewirePath)) {
                 foreach (File::allFiles($livewirePath) as $file) {
-                    $className = $file->getFilenameWithoutExtension();
-                    $fqcn = "App\\Modules\\{$name}\\Application\\Livewire\\{$className}";
+                    $relativePath = Str::after($file->getPathname(), $livewirePath . DIRECTORY_SEPARATOR);
+
+                    $classRelative = str_replace(
+                        [DIRECTORY_SEPARATOR, '.php'],
+                        ['\\', ''],
+                        $relativePath
+                    );
+
+                    // ساخت FQCN
+                    $fqcn = "App\\Modules\\{$name}\\Application\\Livewire\\{$classRelative}";
 
                     if (class_exists($fqcn)) {
-                        $componentName = $alias . '.' . Str::kebab($className);
+                        // alias برای Livewire (Admin\RequestShow => admin.request-show)
+                        $aliasPart = Str::kebab(str_replace('\\', '.', $classRelative));
+                        $componentName = $alias . '.' . $aliasPart;
+
                         Livewire::component($componentName, $fqcn);
                     }
                 }

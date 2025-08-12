@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\PayForMe\Livewire\My;
+namespace App\Modules\PayForMe\Application\Livewire\My;
 
 use App\Modules\PayForMe\Application\UseCases\GetMyRequests;
 use Livewire\Component;
@@ -14,6 +14,6 @@ class RequestsTable extends Component
     public function render(GetMyRequests $useCase)
     {
         $requests = $useCase->execute(Auth::id());
-        return view('payforme::my.requests-table', ['requests' => $requests]);
+        return view('pay-for-me::my.requests-table', ['requests' => $requests]);
     }
 }

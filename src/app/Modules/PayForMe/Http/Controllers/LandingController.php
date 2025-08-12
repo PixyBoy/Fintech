@@ -8,6 +8,6 @@ class LandingController extends Controller
 {
     public function index()
     {
-        return view('payforme::public.landing');
+        return view('pay-for-me::public.landing');
     }
 }

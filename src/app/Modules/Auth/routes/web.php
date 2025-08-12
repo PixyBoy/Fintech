@@ -5,7 +5,7 @@ use App\Modules\Auth\Application\Http\Controllers\AuthController;
 
 Route::middleware('web')->group(function () {
 
-    Route::view('/login', 'authmod::auth.login')
+    Route::view('/login', 'auth::auth.login')
         ->name('login')
         ->middleware('guest');
 

@@ -1,4 +1,4 @@
-<x-payforme::layouts.module>
+<x-pay-for-me::layouts.module>
     <form action="{{ route('payforme.request.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
         <div>
@@ -22,4 +22,4 @@
         </div>
         <button class="bg-blue-500 text-white px-4 py-2">Submit</button>
     </form>
-</x-payforme::layouts.module>
+</x-pay-for-me::layouts.module>

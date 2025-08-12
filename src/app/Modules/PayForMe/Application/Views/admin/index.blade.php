@@ -1,3 +1,3 @@
-<x-payforme::layouts.module>
+<x-pay-for-me::layouts.module>
     @livewire('App\\Modules\\PayForMe\\Livewire\\Admin\\RequestsTable')
-</x-payforme::layouts.module>
+</x-pay-for-me::layouts.module>

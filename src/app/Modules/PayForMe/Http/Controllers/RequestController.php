@@ -16,7 +16,7 @@ class RequestController extends Controller
 
     public function create()
     {
-        return view('payforme::public.form');
+        return view('pay-for-me::public.form');
     }
 
     public function store(Request $request)

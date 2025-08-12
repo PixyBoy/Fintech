@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\PayForMe\Livewire\Admin;
+namespace App\Modules\PayForMe\Application\Livewire\Admin;
 
 use App\Modules\PayForMe\Application\UseCases\Admin\UpdateStatus;
 use App\Modules\PayForMe\Infrastructure\Persistence\Eloquent\Models\PayForMeRequestModel;
@@ -34,6 +34,6 @@ class RequestShow extends Component
 
     public function render()
     {
-        return view('payforme::admin.request-show');
+        return view('pay-for-me::admin.request-show');
     }
 }

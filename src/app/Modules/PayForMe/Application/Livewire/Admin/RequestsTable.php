@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\PayForMe\Livewire\Admin;
+namespace App\Modules\PayForMe\Application\Livewire\Admin;
 
 use App\Modules\PayForMe\Infrastructure\Persistence\Eloquent\Models\PayForMeRequestModel;
 use Livewire\Component;
@@ -19,6 +19,6 @@ class RequestsTable extends Component
             $query->where('status', $this->status);
         }
         $requests = $query->paginate();
-        return view('payforme::admin.requests-table', ['requests' => $requests]);
+        return view('pay-for-me::admin.requests-table', ['requests' => $requests]);
     }
 }

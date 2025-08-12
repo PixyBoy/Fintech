@@ -16,13 +16,13 @@ class RequestController extends Controller
     public function index()
     {
         $requests = PayForMeRequestModel::latest()->paginate();
-        return view('payforme::admin.index', compact('requests'));
+        return view('pay-for-me::admin.index', compact('requests'));
     }
 
     public function show($id)
     {
         $request = PayForMeRequestModel::findOrFail($id);
-        return view('payforme::admin.show', compact('request'));
+        return view('pay-for-me::admin.show', compact('request'));
     }
 
     public function updateStatus($id, Request $request)

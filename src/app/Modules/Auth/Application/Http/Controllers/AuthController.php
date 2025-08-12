@@ -79,7 +79,7 @@ class AuthController
 
     public function kycLevel1Form()
     {
-        return view('authmod::kyc.level1');
+        return view('auth::kyc.level1');
     }
 
     public function kycLevel1Submit(Request $request)

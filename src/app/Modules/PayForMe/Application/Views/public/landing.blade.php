@@ -1,4 +1,4 @@
-<x-payforme::layouts.module>
+<x-pay-for-me::layouts.module>
     <div class="bg-white p-6 rounded shadow">
         <h1 class="text-2xl mb-4">Pay For Me</h1>
         <p>Request us to pay for a purchase on your behalf.</p>
@@ -7,4 +7,4 @@
         @endif
         <a href="{{ route('payforme.request.create') }}" class="text-blue-500">Create Request</a>
     </div>
-</x-payforme::layouts.module>
+</x-pay-for-me::layouts.module>

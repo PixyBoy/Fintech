@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\PayForMe\Livewire\Public;
+namespace App\Modules\PayForMe\Application\Livewire\Public;
 
 use App\Modules\PayForMe\Application\Services\Quote\QuoteCalculator;
 use Livewire\Component;
@@ -26,6 +26,6 @@ class QuoteWidget extends Component
 
     public function render()
     {
-        return view('payforme::public.quote-widget');
+        return view('pay-for-me::public.quote-widget');
     }
 }

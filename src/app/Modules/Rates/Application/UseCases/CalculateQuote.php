@@ -38,4 +38,8 @@ class CalculateQuote
             $totalIrr,
         );
     }
+    public function execute(string $serviceKey, string $amountUsd): QuoteResult
+    {
+        return $this(new QuoteInput($serviceKey, $amountUsd));
+    }
 }

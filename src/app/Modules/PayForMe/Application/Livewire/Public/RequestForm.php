@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\PayForMe\Livewire\Public;
+namespace App\Modules\PayForMe\Application\Livewire\Public;
 
 use App\Modules\PayForMe\Application\DTOs\CreateRequestInput;
 use App\Modules\PayForMe\Application\UseCases\CreateRequest;
@@ -29,6 +29,6 @@ class RequestForm extends Component
 
     public function render()
     {
-        return view('payforme::public.form-livewire');
+        return view('pay-for-me::public.form-livewire');
     }
 }

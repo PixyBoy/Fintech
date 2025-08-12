@@ -15,6 +15,6 @@ class RequestController extends Controller
     public function index()
     {
         $requests = $this->getMyRequests->execute(Auth::id());
-        return view('payforme::my.index', compact('requests'));
+        return view('pay-for-me::my.index', compact('requests'));
     }
 }
